@@ -107,10 +107,8 @@ JSONEditor.AbstractTheme = Class.extend({
   getSwitcher: function(options) {
     var switcher = this.getSelectInput(options);
     switcher.style.backgroundColor = 'transparent';
-    switcher.style.height = 'auto';
     switcher.style.fontStyle = 'italic';
     switcher.style.fontWeight = 'normal';
-    switcher.style.padding = '0 0 0 3px';
     return switcher;
   },
   getSwitcherOptions: function(switcher) {

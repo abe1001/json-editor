@@ -1983,31 +1983,38 @@ JSONEditor.defaults.editors.string = JSONEditor.AbstractEditor.extend({
       this.input.disabled = true;
     }
 
-    this.input
-      .addEventListener('change',function(e) {        
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Don't allow changing if this field is a template
-        if(self.schema.template) {
-          this.value = self.value;
-          return;
-        }
+    var eventHandler = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
 
-        var val = this.value;
-        
-        // sanitize value
-        var sanitized = self.sanitize(val);
-        if(val !== sanitized) {
-          this.value = sanitized;
-        }
-        
-        self.is_dirty = true;
+      // Don't allow changing if this field is a template
+      if(self.schema.template) {
+        this.value = self.value;
+        return;
+      }
 
-        self.refreshValue();
-        self.onChange(true);
-      });
-      
+      var val = this.value;
+
+      // sanitize value
+      var sanitized = self.sanitize(val);
+      if(val !== sanitized) {
+        this.value = sanitized;
+      }
+
+      self.is_dirty = true;
+
+      self.refreshValue();
+      self.onChange(true);
+    };
+
+    // Default input event, 'change'
+    this.input.addEventListener('change' , eventHandler);
+
+    // Additional input event. I.e. 'keyup'
+    if(this.options.input_event) {
+      this.input.addEventListener(this.options.input_event, eventHandler);
+    }
+
     if(this.options.input_height) this.input.style.height = this.options.input_height;
     if(this.options.expand_height) {
       this.adjust_height = function(el) {
@@ -5632,10 +5639,8 @@ JSONEditor.AbstractTheme = Class.extend({
   getSwitcher: function(options) {
     var switcher = this.getSelectInput(options);
     switcher.style.backgroundColor = 'transparent';
-    switcher.style.height = 'auto';
     switcher.style.fontStyle = 'italic';
     switcher.style.fontWeight = 'normal';
-    switcher.style.padding = '0 0 0 3px';
     return switcher;
   },
   getSwitcherOptions: function(switcher) {
