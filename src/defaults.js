@@ -86,7 +86,7 @@ JSONEditor.defaults.languages.en = {
    * When a value is greater than it's supposed to be (inclusive
    * @variables This key takes one variable: The maximum
    */
-  error_maximum_incl: "Value must at most {{0}}",
+  error_maximum_incl: "Value must be at most {{0}}",
   /**
    * When a value is lesser than it's supposed to be (exclusive)
    * @variables This key takes one variable: The minimum
@@ -169,6 +169,8 @@ JSONEditor.plugins = {
   },
   select2: {
     
+  },
+  selectize: {
   }
 };
 
@@ -183,6 +185,11 @@ for(var i in JSONEditor.defaults.editors) {
 JSONEditor.defaults.resolvers.unshift(function(schema) {
   if(typeof schema.type !== "string") return "multiple";
 });
+// If the type is not set but properties are defined, we can infer the type is actually object
+JSONEditor.defaults.resolvers.unshift(function(schema) {
+  // If the schema is a simple type
+  if(!schema.type && schema.properties ) return "object";
+});
 // If the type is set and it's a basic type, use the primitive editor
 JSONEditor.defaults.resolvers.unshift(function(schema) {
   // If the schema is a simple type
@@ -196,7 +203,7 @@ JSONEditor.defaults.resolvers.unshift(function(schema) {
       return "checkbox";
     }
     // Otherwise, default to select menu
-    return "select";
+    return (JSONEditor.plugins.selectize.enable) ? 'selectize' : 'select';
   }
 });
 // Use the multiple editor for schemas where the `type` is set to "any"
@@ -226,7 +233,7 @@ JSONEditor.defaults.resolvers.unshift(function(schema) {
 });
 // Use the `select` editor for dynamic enumSource enums
 JSONEditor.defaults.resolvers.unshift(function(schema) {
-  if(schema.enumSource) return "select";
+  if(schema.enumSource) return (JSONEditor.plugins.selectize.enable) ? 'selectize' : 'select';
 });
 // Use the `enum` or `select` editors for schemas with enumerated properties
 JSONEditor.defaults.resolvers.unshift(function(schema) {
@@ -235,14 +242,21 @@ JSONEditor.defaults.resolvers.unshift(function(schema) {
       return "enum";
     }
     else if(schema.type === "number" || schema.type === "integer" || schema.type === "string") {
-      return "select";
+      return (JSONEditor.plugins.selectize.enable) ? 'selectize' : 'select';
     }
   }
 });
-// Use the 'multiselect' editor for arrays of enumerated strings/numbers/integers
+// Specialized editors for arrays of strings
 JSONEditor.defaults.resolvers.unshift(function(schema) {
-  if(schema.type === "array" && schema.items && !(Array.isArray(schema.items)) && schema.uniqueItems && schema.items["enum"] && ['string','number','integer'].indexOf(schema.items.type) >= 0) {
-    return 'multiselect';
+  if(schema.type === "array" && schema.items && !(Array.isArray(schema.items)) && schema.uniqueItems && ['string','number','integer'].indexOf(schema.items.type) >= 0) {
+    // For enumerated strings, number, or integers
+    if(schema.items.enum) {
+      return 'multiselect';
+    }
+    // For non-enumerated strings (tag editor)
+    else if(JSONEditor.plugins.selectize.enable && schema.items.type === "string") {
+      return 'arraySelectize';
+    }
   }
 });
 // Use the multiple editor for schemas with `oneOf` set
