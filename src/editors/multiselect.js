@@ -208,10 +208,18 @@ JSONEditor.defaults.editors.multiselect = JSONEditor.AbstractEditor.extend({
     });
 
     if(messages.length) {
-      this.theme.addInputError(this.input, messages.join('. ') + '.');
+      if(this.input) {
+        this.theme.addInputError(this.input, messages.join('. ') + '.');
+      } else if(this.inputs) {
+        this.theme.addInputError(this.inputs, messages.join('. ') + '.');
+      }
     }
     else {
-      this.theme.removeInputError(this.input);
+      if(this.input) {
+        this.theme.removeInputError(this.input);
+      } else if(this.inputs) {
+        this.theme.removeInputError(this.inputs);
+      }
     }
 
   }
