@@ -91,27 +91,28 @@ JSONEditor.defaults.editors.multiselect = JSONEditor.AbstractEditor.extend({
   },
   setupSelect2: function() {
     if(window.jQuery && window.jQuery.fn && window.jQuery.fn.select2) {
-        var options = window.jQuery.extend({},JSONEditor.plugins.select2);
-        if(this.schema.options && this.schema.options.select2_options) options = $extend(options,this.schema.options.select2_options);
-        this.select2 = window.jQuery(this.input).select2(options);
-        var self = this;
-        this.select2.on('select2-blur',function() {
-            var val =self.select2.select2('val');
-            self.value = val;
-            self.onChange(true);
-        });
+      var options = window.jQuery.extend({},JSONEditor.plugins.select2);
+      if(this.schema.options && this.schema.options.select2_options) options = $extend(options,this.schema.options.select2_options);
+      this.select2 = window.jQuery(this.input).select2(options);
+      var self = this;
+      this.select2.on('select2-blur',function() {
+        var val =self.select2.select2('val');
+        self.value = val;
+        self.onChange(true);
+      });
     }
     else {
-        this.select2 = null;
+      this.select2 = null;
     }
   },
   onInputChange: function() {
-      this.value = this.input.value;
-      this.onChange(true);
+    this.value = this.input.value;
+    this.onChange(true);
   },
   postBuild: function() {
-      this._super();
-      this.setupSelect2();
+    this._super();
+    this.theme.afterInputReady(this.input);
+    this.setupSelect2();
   },
   register: function() {
     this._super();
@@ -189,9 +190,29 @@ JSONEditor.defaults.editors.multiselect = JSONEditor.AbstractEditor.extend({
   },
   destroy: function() {
     if(this.select2) {
-        this.select2.select2('destroy');
-        this.select2 = null;
+      this.select2.select2('destroy');
+      this.select2 = null;
     }
     this._super();
+  },
+  showValidationErrors: function(errors) {
+    var self = this;
+
+    this.previous_error_setting = this.jsoneditor.options.show_errors;
+
+    var messages = [];
+    $each(errors, function(i,error) {
+      if(error.path === self.path) {
+        messages.push(error.message);
+      }
+    });
+
+    if(messages.length) {
+      this.theme.addInputError(this.input, messages.join('. ') + '.');
+    }
+    else {
+      this.theme.removeInputError(this.input);
+    }
+
   }
 });
