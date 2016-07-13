@@ -7,15 +7,17 @@ JSONEditor.defaults.editors.multiselect = JSONEditor.AbstractEditor.extend({
     this.select_values = {};
 
     var items_schema = this.jsoneditor.expandRefs(this.schema.items || {});
-
     var e = items_schema["enum"] || [];
+    var titles = items_schema.options && items_schema.options.enum_titles || [];
     this.option_keys = [];
+    this.option_display = [];
     for(i=0; i<e.length; i++) {
       // If the sanitized value is different from the enum value, don't include it
       if(this.sanitize(e[i]) !== e[i]) continue;
 
       this.option_keys.push(e[i]+"");
       this.select_values[e[i]+""] = e[i];
+      this.option_display.push((titles[i] || e[i])+"");
     }
   },
   build: function() {
@@ -40,6 +42,7 @@ JSONEditor.defaults.editors.multiselect = JSONEditor.AbstractEditor.extend({
     else {
       this.input_type = 'select';
       this.input = this.theme.getSelectInput(this.option_keys);
+      this.theme.setSelectOptions(this.input,this.option_keys,this.option_display);
       this.input.multiple = true;
       this.input.size = Math.min(10,this.option_keys.length);
 
