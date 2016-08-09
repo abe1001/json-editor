@@ -5617,6 +5617,10 @@ JSONEditor.defaults.editors.multiselect = JSONEditor.AbstractEditor.extend({
       self.updateValue(new_value);
       self.onChange(true);
     });
+    this.control.addEventListener('click',function(e) {
+      e.stopPropagation();
+      return false;
+    });
   },
   setValue: function(value, initial) {
     var i;
